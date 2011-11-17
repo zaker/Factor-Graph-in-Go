@@ -42,7 +42,7 @@ func main() {
 		
 	// }
 
-	// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.1
+	ac.Graph.Vertices[0].InEdges[0].Ch <- 0.1
 	// ac.Graph.Vertices[0].OutEdges[0].Ch <- 0.2
 	// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.1
 	// ac.Graph.Vertices[0].OutEdges[0].Ch <- 0.2
@@ -57,20 +57,20 @@ func main() {
 		
 	// 	println(e.A.Id, " to ", e.B.Id)
 	// }
-	go func(){
-		in := 0.1
-		for i := 0; i < 100;i++{ 
-			ac.Graph.Vertices[0].InEdges[0].Ch <- in
+	// go func(){
+	// 	in := 0.1
+	// 	for i := 0; i < 100;i++{ 
+	// 		ac.Graph.Vertices[0].InEdges[0].Ch <- in
 
-			in += 0.1
-	// ac.Graph.Vertices[0].OutEdges[0].Ch <- 0.2
-			// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.1
-	// ac.Graph.Vertices[1].InEdges[0].Ch <- 0.2
-		// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.3
-		// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.3
-		}
-	}()
-	for{}
+	// 		in += 0.1
+	// // ac.Graph.Vertices[0].OutEdges[0].Ch <- 0.2
+	// 		// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.1
+	// // ac.Graph.Vertices[1].InEdges[0].Ch <- 0.2
+	// 	// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.3
+	// 	// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.3
+	// 	}
+	// }()
+	select {}
 }
 
 func contents(filename string) (string, error) {
