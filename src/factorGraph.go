@@ -16,15 +16,11 @@ type Vertex struct {
 	Output   []float64
 }
 
-
-
-
 type Edge struct {
 	A  *Vertex
 	B  *Vertex
 	Ch chan T
 }
-
 
 type Monitor struct {
 	Id    int
@@ -97,7 +93,7 @@ func (fg *FactorGraph) AddUndirectedEdge(A, B *Vertex) (err error) {
 		return
 	}
 
-	println("creating undirected", A.Id,B.Id)
+	println("creating undirected", A.Id, B.Id)
 	ch1 := make(chan T)
 
 	e := &Edge{A: A, B: B, Ch: ch1}
@@ -114,12 +110,11 @@ func (fg *FactorGraph) AddUndirectedEdge(A, B *Vertex) (err error) {
 	return
 }
 
-
 // func vertex(in []chan T, out []chan T) 
 
 
 func edgeToChannels(in []Edge) (out []chan T) {
-	for _,ch := range in {
+	for _, ch := range in {
 		// println("A:", in[i].A.Id, " <" , ch.Ch ,"B: ", in[i].B.Id)
 		out = append(out, ch.Ch)
 	}
@@ -127,82 +122,79 @@ func edgeToChannels(in []Edge) (out []chan T) {
 	return
 }
 
-func closeChannels(chs []chan float64){
-	
-	for _,ch := range chs{
+func closeChannels(chs []chan float64) {
+
+	for _, ch := range chs {
 		close(ch)
 	}
 }
-func closeChannelsIO(in []chan float64, out []chan float64){
+func closeChannelsIO(in []chan float64, out []chan float64) {
 
 	// closeChannels(in)
 	closeChannels(out)
 }
 
 func (v *Vertex) coms(in []chan T, out []chan T) {
-   type msg struct {
-    idx  int
-    data T
-  }
-  // defer closeChannelsIO(in,out)
+	type msg struct {
+		idx  int
+		data T
+	}
+	// defer closeChannelsIO(in,out)
 
-  all := make(chan msg,10)
-  if v.Mode == 2 {
-  	t := T{true,make([]float64,1)}
-  	all <- msg{-1,t}
-  }
+	all := make(chan msg, 10)
+	if v.Mode == 2 {
+		t := T{true, make([]float64, 1)}
+		all <- msg{-1, t}
+	}
 
-  for i, ch := range in {
-    go func(i int, ch chan T,id int) {
+	for i, ch := range in {
+		go func(i int, ch chan T, id int) {
 
-    	for v := range ch{
-    		println(id,i,"got",v.String(), "on",ch)
-    		
-    		
-	      		v.P[0] += 0.2
-	        	all <- msg{i, v}
+			for v := range ch {
+				println(id, i, "got", v.String(), "on", ch)
 
-	    	
-    	}
-    	println("stop listening to",id)
+				v.P[0] += 0.2
+				all <- msg{i, v}
 
-    }(i, ch,v.Id)
-  }
-  for d := range all {
-    // you have access to d.idx to know which channel sent the data
+			}
+			println("stop listening to", id)
 
-    for i, ch := range out {
-    	println(i,d.data.String(),len(out))
-    	if !d.data.H{
-    		_,ok := <-ch
-    		if ok {
-    			close(ch)
-    		}
-    		continue
-    	}
-    	if len(out) == 1 {
-    		ch <- T{false,d.data.P}
-    		// close(ch)
-    		return
-    	}
-    	if i != d.idx {
-    		// println(v.Id, "sending",d.idx,d.data, "on", ch)
-    		go func(ch chan T){
-	    			ch <- T{true,d.data.P}
-	    		}(ch)
-    	} else {
-    		continue
-    	}
-    }
-  }
-} 
+		}(i, ch, v.Id)
+	}
+	for d := range all {
+		// you have access to d.idx to know which channel sent the data
+
+		for i, ch := range out {
+			println(i, d.data.String(), len(out))
+			if !d.data.H {
+				_, ok := <-ch
+				if ok {
+					close(ch)
+				}
+				continue
+			}
+			if len(out) == 1 {
+				ch <- T{false, d.data.P}
+				// close(ch)
+				return
+			}
+			if i != d.idx {
+				// println(v.Id, "sending",d.idx,d.data, "on", ch)
+				go func(ch chan T) {
+					ch <- T{true, d.data.P}
+				}(ch)
+			} else {
+				continue
+			}
+		}
+	}
+}
 func (v *Vertex) Run(message chan Monitor, algType string) {
-
 
 	in := edgeToChannels(v.InEdges)
 	out := edgeToChannels(v.OutEdges)
 
-	v.coms(in,out)
-	println(v.Id,"done?")
+	v.coms(in, out)
+	println(v.Id, "done?")
 
 }

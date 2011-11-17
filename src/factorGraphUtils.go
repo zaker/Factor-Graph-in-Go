@@ -5,15 +5,14 @@ import (
 	"strings"
 )
 
-type T struct{
+type T struct {
 	H bool
 	P []float64
-
 }
 // type T interface {
 // 	String()
 // }
-func (t *T) String()string{
+func (t *T) String() string {
 	s := ""
 	s += fmt.Sprint(t.H)
 	s += fmt.Sprint(t.P)
