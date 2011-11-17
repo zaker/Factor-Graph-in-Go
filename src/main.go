@@ -16,7 +16,7 @@ func main() {
 	//TODO: Read config file
 	flag.Parse()
 
-	if *fileName == ""{
+	if *fileName == "" {
 		fmt.Println("Usage ", os.Args[0], "-f \"filename of config file\"")
 		return
 	}
@@ -39,10 +39,10 @@ func main() {
 
 	// for i, ch := range monchans {
 	// 	println("unlock", i)
-		
+
 	// }
 
-	ac.Graph.Vertices[0].InEdges[0].Ch <- 0.1
+	// ac.Graph.Vertices[0].OutEdges[0].Ch <- 0.1
 	// ac.Graph.Vertices[0].OutEdges[0].Ch <- 0.2
 	// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.1
 	// ac.Graph.Vertices[0].OutEdges[0].Ch <- 0.2
@@ -54,7 +54,7 @@ func main() {
 	// edges := ac.Graph.Edges
 
 	// for _,e := range edges {
-		
+
 	// 	println(e.A.Id, " to ", e.B.Id)
 	// }
 	// go func(){

@@ -5,6 +5,21 @@ import (
 	"strings"
 )
 
+type T struct{
+	H bool
+	P []float64
+
+}
+// type T interface {
+// 	String()
+// }
+func (t *T) String()string{
+	s := ""
+	s += fmt.Sprint(t.H)
+	s += fmt.Sprint(t.P)
+	return s
+}
+
 func MakeGraph(ac *AlgCfg) (err error) {
 	g := new(FactorGraph)
 	for i := uint8(0); i < ac.Var_nodes; i++ {
