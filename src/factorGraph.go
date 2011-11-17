@@ -59,33 +59,6 @@ func (fg *FactorGraph) AddVertexState(mode, state int) (err error) {
 
 	return
 }
-// func (fg *FactorGraph) AddDirectedEdge(A, B *Vertex) (e *Edge, err error) {
-// 	if A.Id == B.Id {
-// 		err = errors.New("Cannot edge to self")
-// 		return
-// 	}
-// 	ch := make(chan float64, 4)
-// 	e = &Edge{A: A, B: B, Ch: ch}
-// 	return
-// }
-
-// func (fg *FactorGraph) AddInEdge(A, B *Vertex) (err error) {
-// 	e, err := fg.AddDirectedEdge(A, B)
-// 	fg.Edges = append(fg.Edges, *e)
-
-// 	A.InEdges = append(A.InEdges, *e)
-// 	B.OutEdges = append(B.OutEdges, *e)
-// 	return
-// }
-
-// func (fg *FactorGraph) AddOutEdge(A, B *Vertex) (err error) {
-// 	e, err := fg.AddDirectedEdge(B, A)
-// 	fg.Edges = append(fg.Edges, *e)
-
-// 	A.OutEdges = append(A.OutEdges, *e)
-// 	B.InEdges = append(B.InEdges, *e)
-// 	return
-// }
 
 func (fg *FactorGraph) AddUndirectedEdge(A, B *Vertex) (err error) {
 	if A.Id == B.Id {
@@ -109,9 +82,6 @@ func (fg *FactorGraph) AddUndirectedEdge(A, B *Vertex) (err error) {
 
 	return
 }
-
-// func vertex(in []chan T, out []chan T) 
-
 
 func edgeToChannels(in []Edge) (out []chan T) {
 	for _, ch := range in {
@@ -150,32 +120,36 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 	for i, ch := range in {
 		go func(i int, ch chan T, id int) {
 
-			for v := range ch {
+			for v, ok := <-ch; ok; v, ok = <-ch {
 				println(id, i, "got", v.String(), "on", ch)
 
-				v.P[0] += 0.2
-				all <- msg{i, v}
+				if v.H {
+					v.P[0] += 0.2
+					all <- msg{i, v}
+				}
 
 			}
-			println("stop listening to", id)
+			println(id, "stop listening to", i, ch)
 
 		}(i, ch, v.Id)
 	}
+	a := make([]int, 1)
+	a[0] = 0
 	for d := range all {
 		// you have access to d.idx to know which channel sent the data
 
 		for i, ch := range out {
 			println(i, d.data.String(), len(out))
 			if !d.data.H {
-				_, ok := <-ch
-				if ok {
-					close(ch)
-				}
+
+				// if ok {
+				close(ch)
+				// }
 				continue
 			}
 			if len(out) == 1 {
 				ch <- T{false, d.data.P}
-				// close(ch)
+				close(ch)
 				return
 			}
 			if i != d.idx {
