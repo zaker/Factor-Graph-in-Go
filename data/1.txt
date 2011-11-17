@@ -1,0 +1,18 @@
+6										(#variable nodes)
+0										(#state nodes)
+9										(#function nodes)
+[0,2,3]10010110							(Boolean function truth tables)
+[0,1,4]10010110
+[1,2,5]10010110
+[0]G									(single variable functions taking sampled AWGN
+[1]G										- 'G' stands for AWGN samples)
+[2]G
+[3]G
+[4]G
+[5]G
+A										(flooding)
+50 										(#flooding iterations - probably you want to make this 5 at first)
+100										(#decodings - probably you want to make this 1 to start with)
+0.5										(code rate - note that the parity matrix has 3 rows, hence 0.5 = 3/6)
+10.0									(E_b)
+1.0 									(N_0 make E_b/N_0 bigger to reduce decoding errors)

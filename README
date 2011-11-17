@@ -1,0 +1,4 @@
+ Write the project in go?
+- I think it might be well suited for this project, due to the concurency model of go. And the fact that channels are easier to model in a language that actually have native support for them.
+
+
