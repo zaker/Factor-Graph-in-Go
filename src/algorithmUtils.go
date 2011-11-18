@@ -28,6 +28,7 @@ func cleanInputStrings(in []string) (out []string) {
 	out = make([]string, len(in))
 
 	for i := range in {
+
 		out[i] = strings.Fields(in[i])[0]
 
 	}

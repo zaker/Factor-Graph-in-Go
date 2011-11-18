@@ -16,9 +16,6 @@ GOFILES=\
 	factorGraph.go\
 	factorGraphUtils.go\
 	algorithmUtils.go\
-#	typeA.go\
-#	typeB.go\
-#	typeC.go\
 	
 
 # test files for this package
@@ -30,6 +27,12 @@ main: package
 	$(GC) -I_obj main.go
 	$(LD) -L_obj -o $@ main.$O
 	@echo "Done. Executable is: $@"
+
+debug: package
+	$(GC) -g -I_obj main.go
+	$(LD) -L_obj -o $@ main.$O
+	@echo "Debug Done. Executable is: $@"
+
 
 clean:
 	rm -rf *.[$(OS)o] *.a [$(OS)].out _obj _test _testmain.go main
