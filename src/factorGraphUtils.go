@@ -19,6 +19,27 @@ func (t *T) String() string {
 	return s
 }
 
+func trues(n []bool) string {
+	s := "[ "
+	for i := range n {
+		s += fmt.Sprint(n[i]) + " "
+
+	}
+
+	return s + "]"
+}
+func getTrues(n []bool) int {
+	t := 0
+	for i := range n {
+		if n[i] {
+			t++
+		}
+
+	}
+
+	return t
+}
+
 func MakeGraph(ac *AlgCfg) (err error) {
 	g := new(FactorGraph)
 	for i := uint8(0); i < ac.Var_nodes; i++ {

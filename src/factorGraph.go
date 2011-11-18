@@ -109,6 +109,10 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 		idx  int
 		data T
 	}
+	n := make([]bool, len(in))
+	for i := range n {
+		n[i] = true
+	}
 	// defer closeChannelsIO(in,out)
 
 	all := make(chan msg, 10)
@@ -120,45 +124,76 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 	for i, ch := range in {
 		go func(i int, ch chan T, id int) {
 
-			for v, ok := <-ch; ok; v, ok = <-ch {
+			// for v, ok := <-ch ; ok ; v, ok = <-ch{
+			for v := range ch {
 				println(id, i, "got", v.String(), "on", ch)
-
+				if !n[i] {
+					println(id, "using map")
+					break
+				}
 				if v.H {
 					v.P[0] += 0.2
 					all <- msg{i, v}
 				}
 
 			}
+
 			println(id, "stop listening to", i, ch)
+			// close(out[i])
+			// close(in[i])
+			n[i] = false
+			if getTrues(n) == 0 {
+				close(all)
+			}
 
 		}(i, ch, v.Id)
+		println("FG")
 	}
 	a := make([]int, 1)
 	a[0] = 0
 	for d := range all {
 		// you have access to d.idx to know which channel sent the data
+		println("all", v.Id, d.idx, d.data.String(), len(out), trues(n))
 
 		for i, ch := range out {
-			println(i, d.data.String(), len(out))
-			if !d.data.H {
+			println("alli", v.Id, i, d.idx, d.data.String(), len(out), trues(n))
+			if d.idx == -1 {
 
-				// if ok {
-				close(ch)
-				// }
-				continue
-			}
-			if len(out) == 1 {
-				ch <- T{false, d.data.P}
-				close(ch)
-				return
-			}
-			if i != d.idx {
-				// println(v.Id, "sending",d.idx,d.data, "on", ch)
 				go func(ch chan T) {
 					ch <- T{true, d.data.P}
 				}(ch)
-			} else {
 				continue
+			}
+			if getTrues(n) == 0 {
+				close(out[i])
+				close(in[i])
+				return
+			}
+			if len(out) == 1 {
+				println("one left", v.Id, i, d.idx, d.data.String(), len(out), trues(n))
+				n[d.idx] = false
+				ch <- T{false, d.data.P}
+				close(out[i])
+				close(in[i])
+				// close(all)
+				return
+			}
+			if !d.data.H || !n[i] {
+				println("blocked", v.Id, i, d.idx, d.data.String(), len(out), trues(n))
+				// if ok {
+
+				n[d.idx] = false
+				// close(out[i])
+				// close(in[i])
+				// }
+				continue
+			}
+			if i != d.idx {
+				// println(v.Id, "sending",d.idx,d.data, "on", ch)
+				println(v.Id, i, d.idx, d.data.String(), len(out), trues(n))
+				go func(ch chan T) {
+					ch <- T{true, d.data.P}
+				}(ch)
 			}
 		}
 	}
