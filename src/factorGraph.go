@@ -47,7 +47,7 @@ func (fg *FactorGraph) AddVertex(mode int) (err error) {
 }
 func (fg *FactorGraph) AddVertexState(mode, state int) (err error) {
 	if 0 > mode || mode > 2 {
-		err = errors.New("Mode is not correct")
+		err = errors.New("Mode is incorrect")
 		return
 	}
 	id := len(fg.Vertices)
@@ -66,7 +66,7 @@ func (fg *FactorGraph) AddUndirectedEdge(A, B *Vertex) (err error) {
 		return
 	}
 
-	println("creating undirected", A.Id, B.Id)
+	// println("creating undirected", A.Id, B.Id)
 	ch1 := make(chan T,4)
 
 	e := &Edge{A: A, B: B, Ch: ch1}
@@ -92,18 +92,38 @@ func edgeToChannels(in []Edge) (out []chan T) {
 	return
 }
 
+func closeAll(in []chan T) {
+	for _,ch := range in{
+		close(ch)
+	}
+
+}
+
+func onChannels(on []bool,in []chan T)(out []chan T){
+	if len(on) != len(in){
+		return 
+	}
+
+	for i := range in {
+		if on[i] {
+			out = append(out,in[i])
+		}
+	}
+	return 
+}
+
 
 func (v *Vertex) coms(in []chan T, out []chan T) {
 	type msg struct {
 		idx  int
 		data T
 	}
-	n := make([]bool, len(in))
-	for i := range n {
-		n[i] = true
+	on := make([]bool, len(in))
+	for i := range on {
+		on[i] = true
 	}
 
-	all := make(chan msg, 10)
+	all := make(chan msg,10)
 	if v.Mode == 2 {
 		t := T{true, make([]float64, 1)}
 		all <- msg{-1, t}
@@ -113,67 +133,63 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 		go func(i int, ch chan T, id int) {
 
 			for v := range ch {
+				println(i,ch,v.H)
+				// on[i] = v.H
+				if v.H {
+					v.P[0] += 0.2
+					all <- msg{i, v}
+				}else {
+					all <- msg{i, v}
+					break
+				}
 
-				v.P[0] += 0.2
-				all <- msg{i, v}
+
 
 			}
 			println(id, "stop listening to", i, ch)
 
-			n[i] = false
-			if getTrues(n) == 0 {
+			on[i] = false
+			if getTrues(on) == 0 {
 				close(all)
 			}
 
 		}(i, ch, v.Id)
 	
 	}
-
+	message_number := 0
 	for d := range all {
 
-		// you have access to d.idx to know which channel sent the data
+		println("got",v.Id,d.idx)
+		if d.idx >= 0 {
+			on[d.idx] = false
+			message_number++
+		}
+		tmpCh := onChannels(on,out)
+		if len(tmpCh) == 0 {
+			println("nothing to say")
+			closeAll(out)
+			break
+		}
+		for i, ch := range tmpCh {
+			println("alli", v.Id, i, d.idx, d.data.String(), len(tmpCh), trues(on))
+			
+				if len (out) == message_number{
 
-			println("all", v.Id, d.idx, d.data.String(), len(out), trues(n))
-
-			for i, ch := range out {
-				println("alli", v.Id, i, d.idx, d.data.String(), len(out), trues(n))
-				if d.idx == -1 {
-
-					go func(ch chan T) {
-						ch <- T{true, d.data.P}
-					}(ch)
-					continue
-				}
-				if getTrues(n) == 0  && v.Mode == 2{
-					close(out[i])
-					close(in[i])
-					return
-				}
-				if len(out) == 1 {
-					println("one left", v.Id, i, d.idx, d.data.String(), len(out), trues(n))
-					n[d.idx] = false
+					println(v.Id,"breaking out")
 					ch <- T{false, d.data.P}
-					close(out[i])
-					close(in[i])
-
-					return
+					
+					break
 				}
-				if !d.data.H || !n[i] {
-					println("blocked", v.Id, i, d.idx, d.data.String(), len(out), trues(n))
-
-
-					n[d.idx] = false
-
-					continue
-				}
-				if i != d.idx {
-
-					println(v.Id, i, d.idx, d.data.String(), len(out), trues(n))
-					go func(ch chan T) {
-						ch <- T{true, d.data.P}
-					}(ch)
-				}
-			}
+				println(ch)
+				go func(ch chan T) {
+					ch <- T{true, d.data.P}
+				}(ch)
+			
+			
+		}
+		if d.idx >= 0 {
+			on[d.idx] = true
+		}
 
 	}
 }
@@ -181,7 +197,7 @@ func (v *Vertex) Run(message chan Monitor, algType string) {
 
 	in := edgeToChannels(v.InEdges)
 	out := edgeToChannels(v.OutEdges)
-
+	println(v.Id, "runing?")
 	v.coms(in, out)
 	println(v.Id, "done?")
 

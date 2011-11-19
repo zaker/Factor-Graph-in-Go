@@ -32,45 +32,27 @@ func main() {
 
 	fmt.Println("num v ", len(ac.Graph.Vertices))
 	monchans := make([]chan channelSimulator.Monitor, len(ac.Graph.Vertices))
+	
+	// q := make(chan int) 
 	for i := range ac.Graph.Vertices {
-		fmt.Println("Starting", ac.Graph.Vertices[i].Id)
-		go ac.Graph.Vertices[i].Run(monchans[i], ac.AlgType)
+		// fmt.Println("Starting", ac.Graph.Vertices[i].Id)
+		// go func (ac *channelSimulator.AlgCfg){
+			go ac.Graph.Vertices[i].Run(monchans[i], ac.AlgType)
+			// q <- 1
+		// }(ac)
 	}
+		 
+	// i := 0
+	select {
+	// case j,ok := <- q:
+		// i += j
+		// println(i)
+		// if i >= len(ac.Graph.Vertices) || ok{
+			// return
+		// }
 
-	// for i, ch := range monchans {
-	// 	println("unlock", i)
-
-	// }
-
-	// ac.Graph.Vertices[0].OutEdges[0].Ch <- 0.1
-	// ac.Graph.Vertices[0].OutEdges[0].Ch <- 0.2
-	// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.1
-	// ac.Graph.Vertices[0].OutEdges[0].Ch <- 0.2
-
-	// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.1
-	// ac.Graph.Vertices[1].InEdges[0].Ch <- 0.2
-	// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.1
-	// ac.Graph.Vertices[1].InEdges[0].Ch <- 0.2
-	// edges := ac.Graph.Edges
-
-	// for _,e := range edges {
-
-	// 	println(e.A.Id, " to ", e.B.Id)
-	// }
-	// go func(){
-	// 	in := 0.1
-	// 	for i := 0; i < 100;i++{ 
-	// 		ac.Graph.Vertices[0].InEdges[0].Ch <- in
-
-	// 		in += 0.1
-	// // ac.Graph.Vertices[0].OutEdges[0].Ch <- 0.2
-	// 		// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.1
-	// // ac.Graph.Vertices[1].InEdges[0].Ch <- 0.2
-	// 	// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.3
-	// 	// ac.Graph.Vertices[0].InEdges[0].Ch <- 0.3
-	// 	}
-	// }()
-	select {}
+	}
+	println("FU")
 }
 
 func contents(filename string) (string, error) {
