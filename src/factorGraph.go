@@ -1,6 +1,9 @@
 package channelSimulator
 
-import "errors"
+import (
+	"errors"
+	"sync"
+)
 
 type FactorGraph struct {
 	Vertices []Vertex
@@ -67,14 +70,14 @@ func (fg *FactorGraph) AddUndirectedEdge(A, B *Vertex) (err error) {
 	}
 
 	// println("creating undirected", A.Id, B.Id)
-	ch1 := make(chan T,4)
+	ch1 := make(chan T)
 
 	e := &Edge{A: A, B: B, Ch: ch1}
 	fg.Edges = append(fg.Edges, *e)
 	A.OutEdges = append(A.OutEdges, *e)
 	B.InEdges = append(B.InEdges, *e)
 
-	ch2 := make(chan T,4)
+	ch2 := make(chan T)
 	e = &Edge{A: B, B: A, Ch: ch2}
 	fg.Edges = append(fg.Edges, *e)
 	B.OutEdges = append(B.OutEdges, *e)
@@ -93,29 +96,33 @@ func edgeToChannels(in []Edge) (out []chan T) {
 }
 
 func closeAll(in []chan T) {
-	for _,ch := range in{
+	for _, ch := range in {
 		close(ch)
 	}
 
 }
 
-func onChannels(on []bool,in []chan T)(out []chan T){
-	if len(on) != len(in){
-		return 
+func onChannels(override bool, on []bool, in []chan T) (out []chan T) {
+
+	if override || len(in) == 1 {
+		return in
+	}
+	if len(on) != len(in) {
+		return
 	}
 
 	for i := range in {
 		if on[i] {
-			out = append(out,in[i])
+			out = append(out, in[i])
 		}
 	}
-	return 
+	return
 }
-
 
 func (v *Vertex) coms(in []chan T, out []chan T) {
 	type msg struct {
-		idx  int
+		idx int
+		// num int
 		data T
 	}
 	on := make([]bool, len(in))
@@ -123,75 +130,89 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 		on[i] = true
 	}
 
-	all := make(chan msg,10)
-	if v.Mode == 2 {
-		t := T{true, make([]float64, 1)}
-		all <- msg{-1, t}
-	}
+	all := make(chan msg, 10)
 
+	// if v.Mode == 2 {
+	// 	t := T{true, make([]float64, 1)}
+	// 	all <- msg{-1, t}
+	// }
+
+	wg := new(sync.WaitGroup)
+
+	once := new(sync.Once)
+	// wg.Add(1)
 	for i, ch := range in {
+		wg.Add(1)
 		go func(i int, ch chan T, id int) {
 
 			for v := range ch {
-				println(i,ch,v.H)
+				println(i, ch, v.H)
 				// on[i] = v.H
 				if v.H {
-					v.P[0] += 0.2
+					v.P[0] += 1
 					all <- msg{i, v}
-				}else {
+				} else {
 					all <- msg{i, v}
 					break
 				}
 
-
-
 			}
 			println(id, "stop listening to", i, ch)
-
-			on[i] = false
-			if getTrues(on) == 0 {
-				close(all)
-			}
+			wg.Done()
+			// on[i] = false
+			// if getTrues(on) == 0 {
+			wg.Wait()
+			once.Do(func() { close(all) })
+			// }
 
 		}(i, ch, v.Id)
-	
+
 	}
 	message_number := 0
 	for d := range all {
 
-		println("got",v.Id,d.idx)
-		if d.idx >= 0 {
+		println("got", v.Id, d.idx)
+		if !d.data.First {
 			on[d.idx] = false
 			message_number++
 		}
-		tmpCh := onChannels(on,out)
-		if len(tmpCh) == 0 {
-			println("nothing to say")
+		tmpCh := onChannels(d.data.First || len(out) == message_number, on, out)
+
+		open := true
+		// wg2 := new(sync.WaitGroup)
+		for i, ch := range tmpCh {
+			println("alli", v.Id, i, d.idx, d.data.String(), len(tmpCh), trues(on))
+
+			if len(out) == message_number {
+				// go func(ch chan T) {
+				ch <- T{H: false, P: d.data.P}
+				// }(ch)
+				on[i] = false
+				open = false
+				continue
+			}
+			println(ch)
+			// wg2.Add(1)
+			if d.data.H {
+				go func(ch chan T) {
+					// wg2.Done()
+					ch <- T{H: true, P: d.data.P}
+				}(ch)
+			}
+
+		}
+		if !open {
+
 			closeAll(out)
 			break
 		}
-		for i, ch := range tmpCh {
-			println("alli", v.Id, i, d.idx, d.data.String(), len(tmpCh), trues(on))
-			
-				if len (out) == message_number{
-
-					println(v.Id,"breaking out")
-					ch <- T{false, d.data.P}
-					
-					break
-				}
-				println(ch)
-				go func(ch chan T) {
-					ch <- T{true, d.data.P}
-				}(ch)
-			
-			
-		}
-		if d.idx >= 0 {
+		// wg.Wait()
+		if d.idx >= 0 && d.data.H {
 			on[d.idx] = true
 		}
 
 	}
+	// wg.Done()
 }
 func (v *Vertex) Run(message chan Monitor, algType string) {
 

@@ -32,24 +32,32 @@ func main() {
 
 	fmt.Println("num v ", len(ac.Graph.Vertices))
 	monchans := make([]chan channelSimulator.Monitor, len(ac.Graph.Vertices))
-	
+
 	// q := make(chan int) 
 	for i := range ac.Graph.Vertices {
 		// fmt.Println("Starting", ac.Graph.Vertices[i].Id)
 		// go func (ac *channelSimulator.AlgCfg){
-			go ac.Graph.Vertices[i].Run(monchans[i], ac.AlgType)
-			// q <- 1
+		go ac.Graph.Vertices[i].Run(monchans[i], ac.AlgType)
+		// q <- 1
 		// }(ac)
 	}
-		 
+
+	for i, v := range ac.Graph.Vertices {
+		if v.Mode == 2 {
+			ac.Graph.Vertices[i].InEdges[0].Ch <- channelSimulator.T{true, true, []float64{1.0}}
+			break
+
+		}
+	}
+
 	// i := 0
 	select {
 	// case j,ok := <- q:
-		// i += j
-		// println(i)
-		// if i >= len(ac.Graph.Vertices) || ok{
-			// return
-		// }
+	// i += j
+	// println(i)
+	// if i >= len(ac.Graph.Vertices) || ok{
+	// return
+	// }
 
 	}
 	println("FU")

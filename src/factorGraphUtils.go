@@ -6,8 +6,9 @@ import (
 )
 
 type T struct {
-	H bool
-	P []float64
+	H     bool
+	First bool
+	P     []float64
 }
 // type T interface {
 // 	String()
