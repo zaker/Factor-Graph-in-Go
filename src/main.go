@@ -51,15 +51,10 @@ func main() {
 	}
 
 	// i := 0
-	select {
-	// case j,ok := <- q:
-	// i += j
-	// println(i)
-	// if i >= len(ac.Graph.Vertices) || ok{
-	// return
-	// }
+	select {}
 
-	}
+	for{}
+
 	println("FU")
 }
 

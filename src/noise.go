@@ -28,17 +28,17 @@ func (awgn *AWGNoise) ToChannel(out chan float64) {
 
 func randomAWGNGenerator(rate, eb, no float64) func() (v []float64) {
 	//	println(rate, eb, no)
-	noiseToRand := make(chan float64, 4)
+	// noiseToRand := make(chan float64, 4)
 
 	std_dev := math.Sqrt(no / 2)
-	noiser := NewAWGNoise(std_dev, 0.0)
+	awgn := NewAWGNoise(std_dev, 0.0)
 
-	go noiser.ToChannel(noiseToRand)
+	// go noiser.ToChannel(noiseToRand)
 	return func() (v []float64) {
 		ec := eb * rate
 		//		snr := eb /no
 		ti := math.Sqrt(ec) * -1.0
-		vi := <-noiseToRand
+		vi := rand.NormFloat64()*awgn.std_deviation + awgn.mean
 		ri := ti + vi
 		divisor := 1.0
 		divisor += math.Pow(math.E, -2.0*((math.Sqrt(ec)*ri)/(math.Pow(std_dev, 2))))

@@ -137,12 +137,12 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 	// 	all <- msg{-1, t}
 	// }
 
-	wg := new(sync.WaitGroup)
+	inWg := new(sync.WaitGroup)
 
 	once := new(sync.Once)
 	// wg.Add(1)
 	for i, ch := range in {
-		wg.Add(1)
+		inWg.Add(1)
 		go func(i int, ch chan T, id int) {
 
 			for v := range ch {
@@ -158,10 +158,10 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 
 			}
 			println(id, "stop listening to", i, ch)
-			wg.Done()
+			inWg.Done()
 			// on[i] = false
 			// if getTrues(on) == 0 {
-			wg.Wait()
+			inWg.Wait()
 			once.Do(func() { close(all) })
 			// }
 
@@ -169,6 +169,7 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 
 	}
 	message_number := 0
+	outWg := new(sync.WaitGroup)
 	for d := range all {
 
 		println("got", v.Id, d.idx)
@@ -184,9 +185,11 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 			println("alli", v.Id, i, d.idx, d.data.String(), len(tmpCh), trues(on))
 
 			if len(out) == message_number {
-				// go func(ch chan T) {
+				outWg.Add(1)
+				go func(ch chan T) {
 				ch <- T{H: false, P: d.data.P}
-				// }(ch)
+				outWg.Done()
+				}(ch)
 				on[i] = false
 				open = false
 				continue
@@ -194,15 +197,17 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 			println(ch)
 			// wg2.Add(1)
 			if d.data.H {
+				outWg.Add(1)
 				go func(ch chan T) {
 					// wg2.Done()
 					ch <- T{H: true, P: d.data.P}
+					outWg.Done()
 				}(ch)
 			}
 
 		}
 		if !open {
-
+			outWg.Wait()
 			closeAll(out)
 			break
 		}
