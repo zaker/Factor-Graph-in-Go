@@ -7,13 +7,12 @@ import (
 	"io"
 	"math"
 	"os"
-	//	"strings"
+	// "sync"
 )
 
 var fileName *string = flag.String("f", "", "-f \"filename\"")
 
 func main() {
-	//TODO: Read config file
 	flag.Parse()
 
 	if *fileName == "" {
@@ -31,31 +30,55 @@ func main() {
 	fmt.Printf(ac.String())
 
 	fmt.Println("num v ", len(ac.Graph.Vertices))
-	monchans := make([]chan channelSimulator.Monitor, len(ac.Graph.Vertices))
+	// monchans := make([]chan channelSimulator.Monitor, len(ac.Graph.Vertices))
 
-	// q := make(chan int) 
+	// quit := make(chan bool)
+	// quitWg := new(sync.WaitGroup)
+	// quitOnce := new(sync.Once)
 	for i := range ac.Graph.Vertices {
-		// fmt.Println("Starting", ac.Graph.Vertices[i].Id)
-		// go func (ac *channelSimulator.AlgCfg){
-		go ac.Graph.Vertices[i].Run(monchans[i], ac.AlgType)
-		// q <- 1
+		// quitWg.Add(1)
+		// go func(ac *channelSimulator.AlgCfg){
+		ac.Graph.Vertices[i].Init()
+
+		// 	quitWg.Done()
+		// 	quitWg.Wait()
+		// 	quitOnce.Do(func() {quit<-true})
+		// }(ac)
+	}
+	for i := range ac.Graph.Vertices {
+		// quitWg.Add(1)
+		// go func(ac *channelSimulator.AlgCfg){
+		go ac.Graph.Vertices[i].Run(ac.AlgType,ac.Decodings)
+
+		// 	quitWg.Done()
+		// 	quitWg.Wait()
+		// 	quitOnce.Do(func() {quit<-true})
 		// }(ac)
 	}
 
-	for i, v := range ac.Graph.Vertices {
-		if v.Mode == 2 {
-			ac.Graph.Vertices[i].InEdges[0].Ch <- channelSimulator.T{true, true, []float64{1.0}}
-			break
 
-		}
+
+	// for i, v := range ac.Graph.Vertices {
+	// 	if v.Mode == 2 {
+	// 		ac.Graph.Vertices[i].InEdges[0].Ch <- channelSimulator.T{true, true, []float64{1.0}}
+	// 		break
+
+	// 	}
+	// }
+
+	// for {
+	// 	b := false
+	select {
+	// case b = <-quit:
+
+	// default:
+
 	}
+	// 	if b {
+	// 		break
+	// 	}
+	// }
 
-	// i := 0
-	select {}
-
-	for{}
-
-	println("FU")
 }
 
 func contents(filename string) (string, error) {
@@ -63,21 +86,22 @@ func contents(filename string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer f.Close() // f.Close will run when we're finished.
+	defer f.Close()
 
 	var result []byte
 	buf := make([]byte, 100)
 	for {
 		n, err := f.Read(buf[0:])
-		result = append(result, buf[0:n]...) // append is discussed later.
+		result = append(result, buf[0:n]...)
+
 		if err != nil {
 			if err == io.EOF {
 				break
 			}
-			return "", err // f will be closed if we return here.
+			return "", err
 		}
 	}
-	return string(result), nil // f will be closed if we return here.
+	return string(result), nil
 }
 
 func channelSimul() {

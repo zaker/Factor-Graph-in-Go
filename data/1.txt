@@ -11,7 +11,7 @@
 [4]G
 [5]G
 A										(flooding)
-50 										(#flooding iterations - probably you want to make this 5 at first)
+5 										(#flooding iterations - probably you want to make this 5 at first)
 100										(#decodings - probably you want to make this 1 to start with)
 0.5										(code rate - note that the parity matrix has 3 rows, hence 0.5 = 3/6)
 10.0									(E_b)

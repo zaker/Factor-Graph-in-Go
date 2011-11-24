@@ -16,7 +16,7 @@ type AlgCfg struct {
 	Func_specs         []string
 	MessagePassingType string
 	Iterations         uint
-	Decodings          uint
+	Decodings          int
 	Compute            []string
 	Rate               float64
 	Eb                 float64

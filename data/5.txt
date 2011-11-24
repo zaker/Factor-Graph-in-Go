@@ -1,0 +1,6 @@
+2 					(#variable nodes)
+0 					(#state nodes)
+1 					(#function nodes)
+[0,1]1,0,1,0 				(function truth tables)
+B 					(rooted-tree)
+a 					(compute all marginals)
