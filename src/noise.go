@@ -3,6 +3,7 @@ package channelSimulator
 import (
 	"math"
 	"math/rand"
+	"time"
 )
 
 type AWGNoise struct {
@@ -26,13 +27,13 @@ func (awgn *AWGNoise) ToChannel(out chan float64) {
 	}
 }
 
-func randomAWGNGenerator(rate, eb, no float64) func() (v []float64) {
+func RandomAWGNGenerator(rate, eb, no float64) func() (v []float64) {
 	//	println(rate, eb, no)
 	// noiseToRand := make(chan float64, 4)
 
 	std_dev := math.Sqrt(no / 2)
 	awgn := NewAWGNoise(std_dev, 0.0)
-
+	rand.Seed(time.Nanoseconds())
 	// go noiser.ToChannel(noiseToRand)
 	return func() (v []float64) {
 		ec := eb * rate

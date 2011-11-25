@@ -45,10 +45,11 @@ func main() {
 		// 	quitOnce.Do(func() {quit<-true})
 		// }(ac)
 	}
+	awgn := channelSimulator.RandomAWGNGenerator(ac.Rate, ac.Eb, ac.No)
 	for i := range ac.Graph.Vertices {
 		// quitWg.Add(1)
 		// go func(ac *channelSimulator.AlgCfg){
-		go ac.Graph.Vertices[i].Run(ac.AlgType,ac.Decodings,ac.Iterations)
+		go ac.Graph.Vertices[i].Run(ac.AlgType,ac.Decodings,ac.Iterations,awgn)
 
 		// 	quitWg.Done()
 		// 	quitWg.Wait()

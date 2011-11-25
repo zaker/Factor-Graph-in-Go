@@ -20,6 +20,7 @@ type Vertex struct {
 	InEdges  []Edge
 	OutEdges []Edge
 	Output   []float64
+	G        bool
 }
 
 type Edge struct {
@@ -188,7 +189,7 @@ func (v *Vertex) marginOf(x int) (out []float64) {
 	return
 }
 
-func (v *Vertex) coms(in []chan T, out []chan T,flood bool,iterations int) {
+func (v *Vertex) coms(in []chan T, out []chan T,flood bool) {
 	type msg struct {
 		idx int
 		// num int
@@ -293,7 +294,7 @@ func (v *Vertex) coms(in []chan T, out []chan T,flood bool,iterations int) {
 		for i, ch := range tmpCh {
 			
 			
-			if len(out) * iterations == message_number  {
+			if len(out) == message_number  {
 				outWg.Add(1)
 				go func(ch chan T,i  int ) {
 					// wg2.Done()
@@ -378,7 +379,7 @@ func (v *Vertex) Init() {
 
 }
 
-func (v *Vertex) Run(T string, decodings int,iterations int) {
+func (v *Vertex) Run(T string, decodings int,iterations int,awgn func() (v []float64)) {
 
 	in := edgeToChannels(v.InEdges)
 	out := edgeToChannels(v.OutEdges)
@@ -386,13 +387,18 @@ func (v *Vertex) Run(T string, decodings int,iterations int) {
 	switch T {
 	case "A":
 		for i := 0 ; i < decodings; i++ {
-			v.coms(in, out,true,iterations)
+			if v.G {
+				v.Output = awgn()
+			}
+			for j := 0 ; j < iterations ;j++ {
+				v.coms(in, out,true)
+			}
 		}
 		if v.Mode == 0 {
 			println("(",v.Id,") = {",v.Variable[0],v.Variable[1],"}" )
 		}
 	case "B":
-		v.coms(in, out,false,1)
+		v.coms(in, out,false)
 		
 		if v.Mode == 0 {
 			println("(",v.Id,") = {",v.Variable[0],v.Variable[1],"}" )

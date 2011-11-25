@@ -123,7 +123,7 @@ func MakeGraph(ac *AlgCfg) (err error) {
 		g.AddVertex(2)
 
 	}
-	awgn := randomAWGNGenerator(ac.Rate, ac.Eb, ac.No)
+	awgn := RandomAWGNGenerator(ac.Rate, ac.Eb, ac.No)
 	for i := 0; i < len(ac.Func_specs); i++ {
 		fs := strings.Split(ac.Func_specs[i], "]")
 		input := strings.Split(fs[0][1:], ",")
@@ -134,9 +134,10 @@ func MakeGraph(ac *AlgCfg) (err error) {
 
 		output := strings.Split(fs[1], separator)
 		array := make([]float64, len(output))
-
+		G := false
 		for j := 0; j < len(output); j++ {
 			if output[j] == "G" {
+				G = true
 				array = awgn()
 				break
 			}
@@ -144,6 +145,7 @@ func MakeGraph(ac *AlgCfg) (err error) {
 		}
 		node_offset := len(ac.State_nodes) + int(ac.Var_nodes)
 		g.Vertices[i+node_offset].Output = array
+		g.Vertices[i+node_offset].G = G
 
 		for j := 0; j < len(input); j++ {
 			vn := 0
