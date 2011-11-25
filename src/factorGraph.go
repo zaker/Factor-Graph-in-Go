@@ -188,7 +188,7 @@ func (v *Vertex) marginOf(x int) (out []float64) {
 	return
 }
 
-func (v *Vertex) coms(in []chan T, out []chan T) {
+func (v *Vertex) coms(in []chan T, out []chan T,flood bool,iterations int) {
 	type msg struct {
 		idx int
 		// num int
@@ -199,7 +199,7 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 		on[i] = true
 	}
 
-	all := make(chan msg, 10)
+	all := make(chan msg, 100)
 	if len(out) == 1 {
 		switch v.Mode {
 		case 0:
@@ -273,31 +273,27 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 		default:
 			println("no such node mode", v.Mode)
 			return
-			// if v.Mode == 2 {
-			// 	t := T{true, make([]float64, 1)}
-			// 	all <- msg{-1, t}
-			// }
 		}
 
 		}
-
-		
-		if !((len(out) -1) <= message_number) {
-			println(message_number)
-			continue
+		var tmpCh []chan T
+		if flood{
+			tmpCh = onChannels(d.data.First || len(out) == message_number, on, out)
+		} else {
+			if !((len(out) -1) <= message_number) {
+				println(message_number)
+				continue
+			}
+			tmpCh = out
 		}
-		// if v.Mode == 2 {
-		// 	d.data.P = v.marginOf(1)
-		// }
 		println("t",v.Id,getTrues(on))
-		// tmpCh := onChannels(d.data.First || len(out) == message_number, on, out)
-
+		
 		open := true
-		// wg2 := new(sync.WaitGroup)
-		for i, ch := range out {
+		
+		for i, ch := range tmpCh {
 			
 			
-			if len(out) == message_number {
+			if len(out) * iterations == message_number  {
 				outWg.Add(1)
 				go func(ch chan T,i  int ) {
 					// wg2.Done()
@@ -321,7 +317,7 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 				open = false
 				continue
 			}
-			println(v.Id," -> ", i)
+			println(v.Id," -", message_number,"> ", i)
 			// wg2.Add(1)
 			if d.data.H {
 				if on[i] {
@@ -350,13 +346,13 @@ func (v *Vertex) coms(in []chan T, out []chan T) {
 		}
 		if !open {
 			outWg.Wait()
-			closeAll(out)
+			// closeAll(out)
 			break
 		}
 		// wg.Wait()
-		// if d.idx >= 0 && d.data.H {
-			// on[d.idx] = true
-		// }
+		if d.idx >= 0 && flood && d.data.H{
+			on[d.idx] = true
+		}
 
 	}
 	// wg.Done()
@@ -382,7 +378,7 @@ func (v *Vertex) Init() {
 
 }
 
-func (v *Vertex) Run(T string, decodings int) {
+func (v *Vertex) Run(T string, decodings int,iterations int) {
 
 	in := edgeToChannels(v.InEdges)
 	out := edgeToChannels(v.OutEdges)
@@ -390,13 +386,13 @@ func (v *Vertex) Run(T string, decodings int) {
 	switch T {
 	case "A":
 		for i := 0 ; i < decodings; i++ {
-			v.coms(in, out)
+			v.coms(in, out,true,iterations)
 		}
 		if v.Mode == 0 {
 			println("(",v.Id,") = {",v.Variable[0],v.Variable[1],"}" )
 		}
 	case "B":
-		v.coms(in, out)
+		v.coms(in, out,false,1)
 		
 		if v.Mode == 0 {
 			println("(",v.Id,") = {",v.Variable[0],v.Variable[1],"}" )

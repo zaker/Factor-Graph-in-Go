@@ -48,7 +48,7 @@ func main() {
 	for i := range ac.Graph.Vertices {
 		// quitWg.Add(1)
 		// go func(ac *channelSimulator.AlgCfg){
-		go ac.Graph.Vertices[i].Run(ac.AlgType,ac.Decodings)
+		go ac.Graph.Vertices[i].Run(ac.AlgType,ac.Decodings,ac.Iterations)
 
 		// 	quitWg.Done()
 		// 	quitWg.Wait()

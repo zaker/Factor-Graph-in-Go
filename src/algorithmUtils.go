@@ -15,7 +15,7 @@ type AlgCfg struct {
 	Func_nodes         uint8
 	Func_specs         []string
 	MessagePassingType string
-	Iterations         uint
+	Iterations         int
 	Decodings          int
 	Compute            []string
 	Rate               float64
