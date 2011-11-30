@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	// "sync"
 )
 
 type AlgCfg struct {
 	AlgType            string
-	Var_nodes          uint8
-	State_nodes        []uint8
-	Func_nodes         uint8
-	Func_specs         []string
+	VarNodes          uint8
+	StateNodes        []uint8
+	FuncNodes         uint8
+	FuncSpecs         []string
 	MessagePassingType string
 	Iterations         int
 	Decodings          int
@@ -84,43 +85,91 @@ func determineDecodingAlg(lines []string) (decoding string, err error) {
 	return
 }
 
+
+func (ac *AlgCfg) Printer(in []chan VariableOut) {
+
+	word := make([]int, ac.VarNodes)
+	words := make([][]int,0)
+	all := make(chan VariableOut)
+
+	// inWg := new(sync.WaitGroup)
+	// once := new(sync.Once)
+	for i, ch := range in {
+		// inWg.Add(1)
+		go func(i int, ch chan VariableOut) {
+
+			for bit := range ch {
+				all <- bit
+			}
+			// inWg.Done()
+
+			// inWg.Wait()
+			// once.Do(func() { close(all) })
+
+	}(i, ch)
+
+	}
+	i := 0
+	for d := range all {
+		i++
+		word[d.Id] = d.Var
+		
+		if i % 5 == 0 {
+			words = append(words,word)
+			print("[ ")
+			for i := range word {
+				print(word[i], " ")
+				word[i] = 0
+			}
+			print("]\n")
+		}
+
+
+
+
+
+	}
+	return
+}
+
+
 func (ac *AlgCfg) FromString(in string) (err error) {
 
 	lines := strings.Split(in, "\n")
 	lines = cleanInputStrings(lines)
 
 	ac.AlgType, err = determineDecodingAlg(lines)
-	fmt.Sscan(lines[0], &ac.Var_nodes)
+	fmt.Sscan(lines[0], &ac.VarNodes)
 
 	if strings.Split(lines[1], ":")[0] == "0" {
 
 	} else {
 		tmp := strings.Split(lines[1], ":")[1]
-		state_nodes := strings.Split(tmp, ",")
-		for i := range state_nodes {
+		stateNodes := strings.Split(tmp, ",")
+		for i := range stateNodes {
 			var j uint8
-			fmt.Sscan(state_nodes[i], &j)
-			ac.State_nodes = append(ac.State_nodes, j)
+			fmt.Sscan(stateNodes[i], &j)
+			ac.StateNodes = append(ac.StateNodes, j)
 
 		}
 	}
 
-	fmt.Sscan(lines[2], &ac.Func_nodes)
-	ac.Func_specs = lines[3 : 3+ac.Func_nodes]
+	fmt.Sscan(lines[2], &ac.FuncNodes)
+	ac.FuncSpecs = lines[3 : 3+ac.FuncNodes]
 
 	switch ac.AlgType {
 	case "A", "C":
 		if ac.AlgType == "C" {
-			fmt.Sscan(lines[4+ac.Func_nodes], &ac.MessagePassingType)
+			fmt.Sscan(lines[4+ac.FuncNodes], &ac.MessagePassingType)
 		} else {
-			fmt.Sscan(lines[4+ac.Func_nodes], &ac.Iterations)
+			fmt.Sscan(lines[4+ac.FuncNodes], &ac.Iterations)
 		}
-		fmt.Sscan(lines[5+ac.Func_nodes], &ac.Decodings)
-		fmt.Sscan(lines[6+ac.Func_nodes], &ac.Rate)
-		fmt.Sscan(lines[7+ac.Func_nodes], &ac.Eb)
-		fmt.Sscan(lines[8+ac.Func_nodes], &ac.No)
+		fmt.Sscan(lines[5+ac.FuncNodes], &ac.Decodings)
+		fmt.Sscan(lines[6+ac.FuncNodes], &ac.Rate)
+		fmt.Sscan(lines[7+ac.FuncNodes], &ac.Eb)
+		fmt.Sscan(lines[8+ac.FuncNodes], &ac.No)
 	case "B":
-		ac.Compute = strings.Split(lines[4+ac.Func_nodes], ",")
+		ac.Compute = strings.Split(lines[4+ac.FuncNodes], ",")
 	default:
 		err = fmt.Errorf("No such Algorithm")
 		return
@@ -133,15 +182,15 @@ func (ac *AlgCfg) String() string {
 
 	s := "Algorithm type: " + ac.AlgType + "\n"
 	s += "Variable Nodes: "
-	s += fmt.Sprint(ac.Var_nodes) + "\n"
+	s += fmt.Sprint(ac.VarNodes) + "\n"
 	s += "State Nodes: "
-	s += fmt.Sprint(len(ac.State_nodes)) + " "
-	s += fmt.Sprint(ac.State_nodes) + "\n"
+	s += fmt.Sprint(len(ac.StateNodes)) + " "
+	s += fmt.Sprint(ac.StateNodes) + "\n"
 	s += "Function Nodes: "
-	s += fmt.Sprint(ac.Func_nodes) + "\n"
+	s += fmt.Sprint(ac.FuncNodes) + "\n"
 	s += "Functions: \n\t"
-	sa := make([]string, ac.Func_nodes)
-	offset := int(ac.Var_nodes) + len(ac.State_nodes)
+	sa := make([]string, ac.FuncNodes)
+	offset := int(ac.VarNodes) + len(ac.StateNodes)
 	for i := 0; i < len(sa); i++ {
 
 		sa[i] = "f" + fmt.Sprint(i) + "("

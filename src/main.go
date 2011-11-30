@@ -46,9 +46,16 @@ func main() {
 		// }(ac)
 	}
 	awgn := channelSimulator.RandomAWGNGenerator(ac.Rate, ac.Eb, ac.No)
+
+	catch := make([]chan channelSimulator.VariableOut, ac.VarNodes)
 	for i := range ac.Graph.Vertices {
 		// quitWg.Add(1)
 		// go func(ac *channelSimulator.AlgCfg){
+
+
+		if ac.Graph.Vertices[i].Mode == 0 {
+			catch = append(catch,ac.Graph.Vertices[i].StdOut)
+		}
 		go ac.Graph.Vertices[i].Run(ac.AlgType, ac.Decodings, ac.Iterations, awgn)
 
 		// 	quitWg.Done()
@@ -57,6 +64,9 @@ func main() {
 		// }(ac)
 	}
 
+	if ac.AlgType == "A" {
+		go ac.Printer(catch)
+	}
 	// for i, v := range ac.Graph.Vertices {
 	// 	if v.Mode == 2 {
 	// 		ac.Graph.Vertices[i].InEdges[0].Ch <- channelSimulator.T{true, true, []float64{1.0}}
