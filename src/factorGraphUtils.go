@@ -8,6 +8,7 @@ import (
 type T struct {
 	H     bool
 	First bool
+	States uint
 	P     []float64
 }
 // type T interface {
@@ -42,44 +43,44 @@ func getTrues(n []bool) int {
 }
 func factorialN(n int) int {
 	f := 1
-	for i := n ; i > 1 ; i-- {
+	for i := n; i > 1; i-- {
 		f *= i
-	}	
+	}
 	return f
 }
 
-func check(i,c uint) bool{
+func check(i, c uint) bool {
 
-	chk := uint (1 << uint(i))
+	chk := uint(1 << uint(i))
 	return (c & chk) > 0
 }
 
-func int2boolA(n int ,l uint) (b []bool) {
-	b = make([]bool,0)
+func int2boolA(n int, l uint) (b []bool) {
+	b = make([]bool, 0)
 	// print(n," => [ ")
-	for i :=  uint(0) ; i < l ;i++ {
-		
+	for i := uint(0); i < l; i++ {
+
 		// println(i,chk)
 		// println("n & chk", n & chk)
-		b = append(b,check(i,uint(n)))
+		b = append(b, check(i, uint(n)))
 		// print(b[i], " ")
 	}
 	// print("]\n")
 	return
 }
 
-func stringA(inA []float64) string{
+func stringA(inA []float64) string {
 	s := fmt.Sprint("[ ")
-	for _,in := range inA {
+	for _, in := range inA {
 		s += fmt.Sprint(in, ", ")
 	}
 	s += fmt.Sprint("]")
 	return s
 }
 
-func stringB(inB []bool) string{
+func stringB(inB []bool) string {
 	s := fmt.Sprint("[ ")
-	for _,in := range inB {
+	for _, in := range inB {
 		s += fmt.Sprint(in, ", ")
 	}
 	s += fmt.Sprint("]")
@@ -87,16 +88,16 @@ func stringB(inB []bool) string{
 }
 
 // }
-func permuteTrues(l uint) ([][]bool){
+func permuteTrues(l uint) [][]bool {
 	// numPermutations := factorialN(l)
 	numPermutations := 1 << l
 	// println(numPermutations)
 	trues := make([][]bool, numPermutations)
 
-	for i := 0 ; i < numPermutations; i++ {
+	for i := 0; i < numPermutations; i++ {
 		// b := make([]bool,l)
 		// println(stringB(int2boolA(i,uint(l))))
-		trues[i] = int2boolA(i,uint(l))
+		trues[i] = int2boolA(i, uint(l))
 	}
 	// println(stringB(trues[0]))
 

@@ -49,15 +49,13 @@ func main() {
 	for i := range ac.Graph.Vertices {
 		// quitWg.Add(1)
 		// go func(ac *channelSimulator.AlgCfg){
-		go ac.Graph.Vertices[i].Run(ac.AlgType,ac.Decodings,ac.Iterations,awgn)
+		go ac.Graph.Vertices[i].Run(ac.AlgType, ac.Decodings, ac.Iterations, awgn)
 
 		// 	quitWg.Done()
 		// 	quitWg.Wait()
 		// 	quitOnce.Do(func() {quit<-true})
 		// }(ac)
 	}
-
-
 
 	// for i, v := range ac.Graph.Vertices {
 	// 	if v.Mode == 2 {

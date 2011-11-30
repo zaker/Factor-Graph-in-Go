@@ -15,6 +15,7 @@ GOFILES=\
 	ldpc_decoder.go\
 	factorGraph.go\
 	factorGraphUtils.go\
+	factorGraphVertex.go\
 	algorithmUtils.go\
 	
 
