@@ -1,7 +1,7 @@
 package main
 
 import (
-	"channelSimulator"
+	"./channelSimulator"
 	"flag"
 	"fmt"
 	"io"
@@ -52,9 +52,8 @@ func main() {
 		// quitWg.Add(1)
 		// go func(ac *channelSimulator.AlgCfg){
 
-
 		if ac.Graph.Vertices[i].Mode == 0 {
-			catch = append(catch,ac.Graph.Vertices[i].StdOut)
+			catch = append(catch, ac.Graph.Vertices[i].StdOut)
 		}
 		go ac.Graph.Vertices[i].Run(ac.AlgType, ac.Decodings, ac.Iterations, awgn)
 
