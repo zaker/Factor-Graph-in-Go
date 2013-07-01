@@ -75,13 +75,15 @@ func main() {
 	// }
 
 	// for {
-	// 	b := false
+	// b := false
+	// for {
 	select {
 	// case b = <-quit:
 
 	// default:
 
 	}
+	// }
 	// 	if b {
 	// 		break
 	// 	}

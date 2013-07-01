@@ -5,10 +5,15 @@ import (
 	"sync"
 )
 
-
 type VariableOut struct {
-	Id int
+	Id  int
 	Var int
+}
+type Message struct {
+	From int
+	To   int
+	Num  int
+	Var  []float64
 }
 
 type Vertex struct {
@@ -22,8 +27,8 @@ type Vertex struct {
 	OutEdges []Edge
 	Output   []float64
 	G        bool
-
-	StdOut	chan VariableOut
+	rwLock   sync.RWMutex
+	StdOut   chan VariableOut
 }
 
 func newVertex(mode uint8, id int) (v *Vertex, err error) {
@@ -48,7 +53,7 @@ func (v *Vertex) compressFor(in []float64, x int) (cv []float64) {
 }
 
 func (v *Vertex) getInputVar(x, i int) (f float64) {
-	//  for all that is not x 
+	//  for all that is not x
 	f = 1.0
 	for j := range v.Fvars {
 		// println("g",v.Id,x,j,stringA(v.Fvars[j]))
@@ -58,11 +63,13 @@ func (v *Vertex) getInputVar(x, i int) (f float64) {
 			// println(stringA(v.Fvars[j]))
 			// println(v.Id,"i x j,",i,x,j,len(v.Fvars),len(v.Fvars[j]))
 			// println(v.Id,"i x j,",i,x,j,len(v.Ttable),len(v.Ttable[x]))
+			v.rwLock.RLock()
 			if v.Ttable[i][j] {
 				f *= v.Fvars[j][1]
 			} else {
 				f *= v.Fvars[j][0]
 			}
+			v.rwLock.RUnlock()
 		}
 	}
 	return
@@ -74,7 +81,6 @@ func (v *Vertex) marginOf(x int) (out []float64) {
 	// for i := range v.Fvars {
 	// 	println("vf",v.Id,i,stringA(v.Fvars[i]))
 	// }
-
 
 	for i := range v.Output {
 
@@ -160,7 +166,6 @@ func (v *Vertex) coms(in []chan T, out []chan T, flood bool) {
 
 		// println("got", v.Id, d.idx)
 
-
 		// println("i", v.Id, d.idx, stringA(d.data.P), d.data.H)
 		if !d.data.First {
 			on[d.idx] = false
@@ -168,15 +173,19 @@ func (v *Vertex) coms(in []chan T, out []chan T, flood bool) {
 
 			switch v.Mode {
 			case 0:
+				v.rwLock.Lock()
 				v.Variable = d.data.P
+				v.rwLock.Unlock()
 
 			case 1:
 			case 2:
+				v.rwLock.Lock()
 				if d.data.States != 0 {
-					v.Fvars[d.idx] = make([]float64, 1 << d.data.States )
+					v.Fvars[d.idx] = make([]float64, 1<<d.data.States)
 				} else {
 					v.Fvars[d.idx] = d.data.P
 				}
+				v.rwLock.Unlock()
 
 			default:
 				// println("no such node mode", v.Mode)
@@ -231,6 +240,7 @@ func (v *Vertex) coms(in []chan T, out []chan T, flood bool) {
 					outWg.Add(1)
 					go func(ch chan T, i int) {
 						// wg2.Done()
+						v.rwLock.RLock()
 						switch v.Mode {
 						case 0:
 							// println("m",v.Id,i,stringA(v.Variable))
@@ -245,6 +255,7 @@ func (v *Vertex) coms(in []chan T, out []chan T, flood bool) {
 								ch <- T{H: true, P: msg}
 							}
 						}
+						v.rwLock.RUnlock()
 						outWg.Done()
 					}(ch, i)
 				}
@@ -300,14 +311,14 @@ func (v *Vertex) Run(T string, decodings int, iterations int, awgn func() (v []f
 				v.coms(in, out, true)
 			}
 			if v.Mode == 0 {
-				v.StdOut <- VariableOut{v.Id,roundFloat64(v.Variable[0])}
-			// println("(", v.Id, ") = {", v.Variable[0], v.Variable[1], "}")
+				v.StdOut <- VariableOut{v.Id, roundFloat64(v.Variable[0])}
+				// println("(", v.Id, ") = {", v.Variable[0], v.Variable[1], "}")
 			}
 		}
 		if v.Mode == 0 {
 			close(v.StdOut)
 		}
-		
+
 	case "B":
 		v.coms(in, out, false)
 
