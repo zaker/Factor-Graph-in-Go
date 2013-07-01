@@ -2,21 +2,17 @@ package channelSimulator
 
 import (
 	"fmt"
-	"strings"
 	"math"
+	"strings"
 )
 
 type T struct {
-	H     bool
-	First bool
+	H      bool
+	First  bool
 	States uint
-	P     []float64
+	P      []float64
 }
 
-
-// type T interface {
-// 	String()
-// }
 func (t *T) String() string {
 	s := ""
 	s += fmt.Sprint(t.H)
@@ -45,11 +41,11 @@ func getTrues(n []bool) int {
 	return t
 }
 
-func roundFloat64(f float64) int{
+func roundFloat64(f float64) int {
 	var t float64
 	if f < 0.5 {
 		t = math.Floor(f)
-	}else {
+	} else {
 		t = math.Ceil(f)
 	}
 
@@ -72,15 +68,9 @@ func check(i, c uint) bool {
 
 func int2boolA(n int, l uint) (b []bool) {
 	b = make([]bool, 0)
-	// print(n," => [ ")
 	for i := uint(0); i < l; i++ {
-
-		// println(i,chk)
-		// println("n & chk", n & chk)
 		b = append(b, check(i, uint(n)))
-		// print(b[i], " ")
 	}
-	// print("]\n")
 	return
 }
 
@@ -102,23 +92,15 @@ func stringB(inB []bool) string {
 	return s
 }
 
-// }
 func permuteTrues(l uint) [][]bool {
-	// numPermutations := factorialN(l)
 	numPermutations := 1 << l
-	// println(numPermutations)
 	trues := make([][]bool, numPermutations)
 
 	for i := 0; i < numPermutations; i++ {
-		// b := make([]bool,l)
-		// println(stringB(int2boolA(i,uint(l))))
 		trues[i] = int2boolA(i, uint(l))
 	}
-	// println(stringB(trues[0]))
-
 
 	return trues
-
 }
 
 func MakeGraph(ac *AlgCfg) (err error) {
@@ -126,7 +108,7 @@ func MakeGraph(ac *AlgCfg) (err error) {
 	for i := uint8(0); i < ac.VarNodes; i++ {
 
 		g.AddVertex(0)
-		g.Vertices[i].StdOut = make(chan VariableOut,4)
+		g.Vertices[i].StdOut = make(chan VariableOut, 4)
 	}
 
 	for i := 0; i < len(ac.StateNodes); i++ {
@@ -168,12 +150,10 @@ func MakeGraph(ac *AlgCfg) (err error) {
 
 			fmt.Sscan(input[j], &vn)
 
-			// fmt.Println(g.Vertices[i+node_offset].Id, "-", g.Vertices[vn].Id)
 			err = g.AddUndirectedEdge(&g.Vertices[i+node_offset], &g.Vertices[vn])
 			if err != nil {
 				return
 			}
-
 		}
 	}
 	ac.Graph = g

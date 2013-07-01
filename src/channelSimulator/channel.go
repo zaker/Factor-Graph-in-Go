@@ -24,7 +24,6 @@ func (ch *Channel) Run() (err error) {
 	print("channel run\n")
 	for err == nil {
 		ch.out <- ch.add(ch.in, ch.noise)
-		// ch.out <- out
 	}
 
 	println("Loop chrashed ", err.Error())

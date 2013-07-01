@@ -6,15 +6,14 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	// "sync"
 )
 
 type AlgCfg struct {
 	AlgType            string
-	VarNodes          uint8
-	StateNodes        []uint8
-	FuncNodes         uint8
-	FuncSpecs         []string
+	VarNodes           uint8
+	StateNodes         []uint8
+	FuncNodes          uint8
+	FuncSpecs          []string
 	MessagePassingType string
 	Iterations         int
 	Decodings          int
@@ -77,45 +76,32 @@ func toJSON(iface interface{}, im_filename string) (err error) {
 }
 
 func determineDecodingAlg(lines []string) (decoding string, err error) {
-
 	m := 0
 	fmt.Sscan(lines[2], &m)
 	decoding = strings.Split(lines[3+m], "")[0]
-
 	return
 }
 
-
 func (ac *AlgCfg) Printer(in []chan VariableOut) {
-
 	word := make([]int, ac.VarNodes)
-	words := make([][]int,0)
+	words := make([][]int, 0)
 	all := make(chan VariableOut)
 
-	// inWg := new(sync.WaitGroup)
-	// once := new(sync.Once)
 	for i, ch := range in {
-		// inWg.Add(1)
 		go func(i int, ch chan VariableOut) {
-
 			for bit := range ch {
 				all <- bit
 			}
-			// inWg.Done()
-
-			// inWg.Wait()
-			// once.Do(func() { close(all) })
-
-	}(i, ch)
+		}(i, ch)
 
 	}
 	i := 0
 	for d := range all {
 		i++
 		word[d.Id] = d.Var
-		
-		if i % 5 == 0 {
-			words = append(words,word)
+
+		if i%5 == 0 {
+			words = append(words, word)
 			print("[ ")
 			for i := range word {
 				print(word[i], " ")
@@ -123,15 +109,9 @@ func (ac *AlgCfg) Printer(in []chan VariableOut) {
 			}
 			print("]\n")
 		}
-
-
-
-
-
 	}
 	return
 }
-
 
 func (ac *AlgCfg) FromString(in string) (err error) {
 

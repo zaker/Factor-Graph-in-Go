@@ -10,8 +10,6 @@ type FactorGraph struct {
 	Edges    []Edge
 }
 
-
-
 type Edge struct {
 	A  *Vertex
 	B  *Vertex
@@ -29,8 +27,6 @@ func NewFactorGraph() (fg *FactorGraph, err error) {
 	fg = new(FactorGraph)
 	return
 }
-
-
 
 func (fg *FactorGraph) AddVertex(mode int) (err error) {
 	err = fg.AddVertexState(mode, 0)
@@ -57,7 +53,6 @@ func (fg *FactorGraph) AddUndirectedEdge(A, B *Vertex) (err error) {
 		return
 	}
 
-	// println("creating undirected", A.Id, B.Id)
 	ch1 := make(chan T)
 
 	e := &Edge{A: A, B: B, Ch: ch1}
@@ -76,7 +71,6 @@ func (fg *FactorGraph) AddUndirectedEdge(A, B *Vertex) (err error) {
 
 func edgeToChannels(in []Edge) (out []chan T) {
 	for _, ch := range in {
-		// println("A:", in[i].A.Id, " <" , ch.Ch ,"B: ", in[i].B.Id)
 		out = append(out, ch.Ch)
 	}
 
@@ -114,4 +108,3 @@ func normalize(in []float64) (out []float64) {
 	return []float64{1.5, 0}
 
 }
-

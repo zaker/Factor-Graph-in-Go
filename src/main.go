@@ -7,7 +7,6 @@ import (
 	"io"
 	"math"
 	"os"
-	// "sync"
 )
 
 var fileName *string = flag.String("f", "", "-f \"filename\"")
@@ -30,64 +29,25 @@ func main() {
 	fmt.Printf(ac.String())
 
 	fmt.Println("num v ", len(ac.Graph.Vertices))
-	// monchans := make([]chan channelSimulator.Monitor, len(ac.Graph.Vertices))
-
-	// quit := make(chan bool)
-	// quitWg := new(sync.WaitGroup)
-	// quitOnce := new(sync.Once)
 	for i := range ac.Graph.Vertices {
-		// quitWg.Add(1)
-		// go func(ac *channelSimulator.AlgCfg){
 		ac.Graph.Vertices[i].Init()
-
-		// 	quitWg.Done()
-		// 	quitWg.Wait()
-		// 	quitOnce.Do(func() {quit<-true})
-		// }(ac)
 	}
 	awgn := channelSimulator.RandomAWGNGenerator(ac.Rate, ac.Eb, ac.No)
 
 	catch := make([]chan channelSimulator.VariableOut, ac.VarNodes)
 	for i := range ac.Graph.Vertices {
-		// quitWg.Add(1)
-		// go func(ac *channelSimulator.AlgCfg){
-
 		if ac.Graph.Vertices[i].Mode == 0 {
 			catch = append(catch, ac.Graph.Vertices[i].StdOut)
 		}
 		go ac.Graph.Vertices[i].Run(ac.AlgType, ac.Decodings, ac.Iterations, awgn)
 
-		// 	quitWg.Done()
-		// 	quitWg.Wait()
-		// 	quitOnce.Do(func() {quit<-true})
-		// }(ac)
 	}
 
 	if ac.AlgType == "A" {
 		go ac.Printer(catch)
 	}
-	// for i, v := range ac.Graph.Vertices {
-	// 	if v.Mode == 2 {
-	// 		ac.Graph.Vertices[i].InEdges[0].Ch <- channelSimulator.T{true, true, []float64{1.0}}
-	// 		break
 
-	// 	}
-	// }
-
-	// for {
-	// b := false
-	// for {
-	select {
-	// case b = <-quit:
-
-	// default:
-
-	}
-	// }
-	// 	if b {
-	// 		break
-	// 	}
-	// }
+	select {}
 
 }
 

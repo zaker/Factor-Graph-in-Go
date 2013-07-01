@@ -21,23 +21,17 @@ func NewAWGNoise(std_deviation, mean float64) *AWGNoise {
 }
 func (awgn *AWGNoise) ToChannel(out chan float64) {
 	for {
-		//		r := rand.NormFloat64()*awgn.std_deviation + awgn.mean
-		//		out <- math.Abs(math.Sin(r))
 		out <- rand.NormFloat64()*awgn.std_deviation + awgn.mean
 	}
 }
 
 func RandomAWGNGenerator(rate, eb, no float64) func() (v []float64) {
-	//	println(rate, eb, no)
-	// noiseToRand := make(chan float64, 4)
 
 	std_dev := math.Sqrt(no / 2)
 	awgn := NewAWGNoise(std_dev, 0.0)
 	rand.Seed(int64(time.Now().Nanosecond()))
-	// go noiser.ToChannel(noiseToRand)
 	return func() (v []float64) {
 		ec := eb * rate
-		//		snr := eb /no
 		ti := math.Sqrt(ec) * -1.0
 		vi := rand.NormFloat64()*awgn.std_deviation + awgn.mean
 		ri := ti + vi
